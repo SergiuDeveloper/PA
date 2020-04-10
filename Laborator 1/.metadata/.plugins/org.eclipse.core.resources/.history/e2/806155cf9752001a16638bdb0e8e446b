@@ -1,0 +1,6 @@
+public class Tree<T> {
+	public static class TreeNode<T> {
+		T value;
+		
+	}
+}

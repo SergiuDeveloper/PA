@@ -1,0 +1,85 @@
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Queue;
+import java.util.PriorityQueue;
+
+public class Graph {
+	public static class GraphNode {
+		public GraphNode(int index) {
+			this.index = index;
+			this.neighboursList = new ArrayList<GraphNode>();
+		}
+		
+		public int index;
+		public List<GraphNode> neighboursList;
+	}
+	
+	public Graph.GraphNode[] graphNodes;
+	
+	private Pair<List<Integer>, Boolean[]> GetConnectedComponentsBFSTraversal(int startingNodeIndex, Boolean[] nodeVisited) {
+		if (nodeVisited[startingNodeIndex])
+			return null;
+		
+		List<Integer> connectedComponent = new ArrayList<Integer>();
+		
+		Queue<Integer> nodesQueue = new PriorityQueue<Integer>();
+		nodesQueue.add(startingNodeIndex);
+
+		Graph.GraphNode currentGraphNode;
+		int currentGraphNodeIndex;
+		while (!nodesQueue.isEmpty()) {
+			currentGraphNodeIndex = nodesQueue.poll();
+			currentGraphNode = this.graphNodes[currentGraphNodeIndex];
+			
+			connectedComponent.add(currentGraphNodeIndex);
+			
+			nodeVisited[currentGraphNodeIndex] = true;
+			
+			for (var neighbour : currentGraphNode.neighboursList)
+				if (!nodeVisited[neighbour.index])
+					nodesQueue.add(neighbour.index);
+		}
+		
+		return (new Pair<List<Integer>, Boolean[]>(connectedComponent, nodeVisited));
+	}
+	
+	public List<List<Integer>> GetConnectedComponents() {
+		List<List<Integer>> connectedComponents = new ArrayList<List<Integer>>();
+		
+		Boolean[] nodeVisited = new Boolean[this.graphNodes.length];
+		for (int i = 0; i < this.graphNodes.length; ++i)
+			nodeVisited[i] = false;
+		
+		Pair<List<Integer>, Boolean[]> bfsTraversalOutput;
+		for (int i = 0; i < this.graphNodes.length; ++i)
+			if (!nodeVisited[i]) {
+				bfsTraversalOutput = this.GetConnectedComponentsBFSTraversal(i, nodeVisited);
+				nodeVisited = bfsTraversalOutput.item2;
+				
+				connectedComponents.add(bfsTraversalOutput.item1);
+			}
+		
+		return connectedComponents;
+	}
+	
+	public static Graph MakeGraphFromAdjacenceMatrix(Boolean[][] adjacenceMatrix) {
+		Graph outputGraph = new Graph();
+		
+		outputGraph.graphNodes = (Graph.GraphNode[]) (new Graph.GraphNode[adjacenceMatrix.length]);
+		int graphNodesCount = 0;
+		
+		Graph.GraphNode currentGraphNode;
+		for (int i = 0; i < adjacenceMatrix.length; ++i) {
+			currentGraphNode = new Graph.GraphNode(i);
+			outputGraph.graphNodes[graphNodesCount] = currentGraphNode;
+			++graphNodesCount;
+		}
+		
+		for (int i = 0; i < adjacenceMatrix.length; ++i)
+			for (int j = 0; j < adjacenceMatrix[i].length; ++j)
+				if (adjacenceMatrix[i][j])
+					outputGraph.graphNodes[i].neighboursList.add(outputGraph.graphNodes[j]);
+		
+		return outputGraph;
+	}
+}

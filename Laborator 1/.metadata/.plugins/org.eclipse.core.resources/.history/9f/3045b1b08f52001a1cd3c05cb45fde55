@@ -1,0 +1,153 @@
+public class EntryPoint {
+	public static class Exercise1 {
+		public static void Run() {
+			System.out.println("Hello World!");
+		}
+	}
+	
+	public static class Exercise2 {
+		public static void Run() {
+			String[] languages = { "C", "C++", "C#", "Python", "Go", "Rust", "JavaScript", "PHP", "Swift", "Java" };
+			
+			int n = (int)(Math.random() * 1_000_000);
+			n = n * 3;
+			n = n + 0b10101;
+			n = n + 0xFF;
+			n = n * 6;
+			
+			int cifSum, cn;
+			while (n > 9) {
+				cifSum = 0;
+				cn = n;
+				while (cn != 0) {
+					cifSum += cn % 10;
+					cn /= 10;
+				}
+				
+				n = cifSum;
+			}
+			
+			System.out.println("Willy-nilly, this semester I will learn " + languages[n]);
+		}
+	}
+	
+	public static class Exercise3 {
+		public static void Run(String[] args) {
+			if (args.length < 2) {
+				System.out.println("Not enough command line arguments provided");
+				return;
+			}
+			
+			int n;
+			try {
+				n = Integer.parseInt(args[0]);
+			}
+			catch (NumberFormatException e) {
+				System.out.println("Invalid format for the first parameter(int)");
+				return;
+			}
+			if (n < 0) {
+				System.out.println("Invalid format for the first parameter(int)");
+				return;
+			}
+			
+			int k;
+			try {
+				k = Integer.parseInt(args[1]);
+			}
+			catch (NumberFormatException e) {
+				System.out.println("Invalid format for the second parameter(int)");
+				return;
+			}
+			if (k < 0) {
+				System.out.println("Invalid format for the second parameter(int)");
+				return;
+			}
+			
+			if (args.length - 2 < k) {
+				System.out.println("Not enough command line arguments provided");
+				return;
+			}
+			
+			String alphabet = "";
+			for (int i = 2; i < args.length; ++i)
+				if (args[i].length() != 1 ||
+					!((args[i].charAt(0) >= 'a' && args[i].charAt(0) <= 'z') || (args[i].charAt(0) >= 'A' && args[i].charAt(0) <= 'Z'))) {
+					System.out.println("Invalid format for parameter(char)");
+					return;
+				}
+				else
+					alphabet += args[i].charAt(0);
+			
+			Boolean[][] apparitionVec = new Boolean[n]['z' + 1];
+			
+			String[] words = new String[n];
+			int randIndex;
+			for (int i = 0; i < n; ++i) {
+				for (int j = 0; j < 'z'; ++j)
+					apparitionVec[i][j] = false;
+				
+				words[i] = "";
+				for (int j = 0; j < k; ++j) {
+					randIndex = (int)(Math.random() * 1_000_000) % alphabet.length();
+					words[i] += alphabet.charAt(randIndex);
+					
+					apparitionVec[i][alphabet.charAt(randIndex)] = true;
+				}
+			}
+			
+			for (var word : words)
+				System.out.println(word);
+			System.out.println();
+			
+			int[] neighboursCount = new int[n];
+			
+			Boolean[][] adjacenceMatrix = new Boolean[n][n];
+			for (int i = 0; i < n; ++i) {
+				neighboursCount[i] = 0;
+				
+				for (int j = 0; j < n; ++j) {
+					adjacenceMatrix[i][j] = false;
+					
+					for (int t = 0; t < words[i].length() && !adjacenceMatrix[i][j]; ++t)
+						if (apparitionVec[j][words[i].charAt(t)]) {
+							adjacenceMatrix[i][j] = true;
+							
+							++neighboursCount[i];
+						}
+				}
+			}
+			
+			for (int i = 0; i < n; ++i)
+			{
+				for (int j = 0; j < n; ++j)
+					System.out.print(adjacenceMatrix[i][j] ? "1 " : "0 ");
+				System.out.println();
+			}
+			
+			int minNeighboursIndex = 0, maxNeighboursIndex = 0, minNeighbours = neighboursCount[0], maxNeighbours = neighboursCount[0];
+			Boolean equalNumOfNeighbours = true;
+			
+			for (int i = 1; i < n; ++i) {
+				if (neighboursCount[i] != neighboursCount[i - 1])
+					equalNumOfNeighbours = false;
+				if (neighboursCount[i] < minNeighbours) {
+					minNeighbours = neighboursCount[i];
+					minNeighboursIndex = i;
+				}
+				if (neighboursCount[i] > maxNeighbours) {
+					maxNeighbours = neighboursCount[i];
+					maxNeighboursIndex = i;
+				}
+			}
+			
+			System.out.println("The word with the least neighbours is " + words[minNeighboursIndex]);
+		}
+	}
+	
+	public static void main(String[] args) {
+		//EntryPoint.Exercise1.Run();
+		//EntryPoint.Exercise2.Run();
+		EntryPoint.Exercise3.Run(args);
+	}
+}

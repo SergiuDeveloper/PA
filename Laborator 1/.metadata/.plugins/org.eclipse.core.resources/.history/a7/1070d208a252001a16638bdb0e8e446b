@@ -1,0 +1,145 @@
+import java.util.List;
+
+public class Exercise3 {
+	public static void Run(String[] args) {
+		long startTime = System.nanoTime();
+		
+		if (args.length < 2) {
+			System.out.println("Not enough command line arguments provided");
+			return;
+		}
+		
+		int n;
+		try {
+			n = Integer.parseInt(args[0]);
+		}
+		catch (NumberFormatException e) {
+			System.out.println("Invalid format for the first parameter(int)");
+			return;
+		}
+		if (n < 0) {
+			System.out.println("Invalid format for the first parameter(int)");
+			return;
+		}
+		
+		int k;
+		try {
+			k = Integer.parseInt(args[1]);
+		}
+		catch (NumberFormatException e) {
+			System.out.println("Invalid format for the second parameter(int)");
+			return;
+		}
+		if (k < 0) {
+			System.out.println("Invalid format for the second parameter(int)");
+			return;
+		}
+		
+		String alphabet = "";
+		for (int i = 2; i < args.length; ++i)
+			if (args[i].length() != 1 ||
+				!((args[i].charAt(0) >= 'a' && args[i].charAt(0) <= 'z') || (args[i].charAt(0) >= 'A' && args[i].charAt(0) <= 'Z'))) {
+				System.out.println("Invalid format for parameter(char)");
+				return;
+			}
+			else
+				alphabet += args[i].charAt(0);
+		
+		Boolean[][] apparitionVec = new Boolean[n]['z' + 1];
+		
+		System.out.println("Words:");
+		
+		String[] words = new String[n];
+		int randIndex;
+		for (int i = 0; i < n; ++i) {
+			for (int j = 0; j < 'z'; ++j)
+				apparitionVec[i][j] = false;
+			
+			words[i] = "";
+			for (int j = 0; j < k; ++j) {
+				randIndex = ((int) (Math.random() * 1_000_000)) % alphabet.length();
+				words[i] += alphabet.charAt(randIndex);
+				
+				apparitionVec[i][alphabet.charAt(randIndex)] = true;
+			}
+			
+			System.out.println(words[i]);
+		}
+		System.out.println();
+		
+		int[] neighboursCount = new int[n];
+		
+		Boolean[][] adjacenceMatrix = new Boolean[n][n];
+		for (int i = 0; i < n; ++i) {
+			neighboursCount[i] = 0;
+			
+			for (int j = 0; j < n; ++j) {
+				adjacenceMatrix[i][j] = false;
+				
+				if (i != j)
+					for (int t = 0; t < words[i].length() && !adjacenceMatrix[i][j]; ++t)
+						if (apparitionVec[j][words[i].charAt(t)]) {
+							adjacenceMatrix[i][j] = true;
+							
+							++neighboursCount[i];
+						}
+			}
+		}
+		
+		for (int i = 0; i < n; ++i)
+		{
+			for (int j = 0; j < n; ++j)
+				System.out.print(adjacenceMatrix[i][j] ? "1 " : "0 ");
+			System.out.println();
+		}
+		System.out.println();
+		
+		int minNeighbours = neighboursCount[0], maxNeighbours = neighboursCount[0];
+		Boolean equalNumOfNeighbours = true;
+		
+		for (int i = 1; i < n; ++i) {
+			if (neighboursCount[i] != neighboursCount[i - 1])
+				equalNumOfNeighbours = false;
+			if (neighboursCount[i] < minNeighbours)
+				minNeighbours = neighboursCount[i];
+			if (neighboursCount[i] > maxNeighbours)
+				maxNeighbours = neighboursCount[i];
+		}
+		
+		if (equalNumOfNeighbours)
+			System.out.println("All the words have the same number of neighbours");
+		else {
+			System.out.println("The words with the least number of neighbours : ");
+			for (int i = 0; i < n; ++i)
+				if (neighboursCount[i] == minNeighbours)
+					System.out.print(words[i] + " ");
+			System.out.println();
+			System.out.println("The words with the most number of neighbours : ");
+			for (int i = 0; i < n; ++i)
+				if (neighboursCount[i] == maxNeighbours)
+					System.out.print(words[i] + " ");
+		}
+		System.out.println();
+		System.out.println();
+		
+		Graph associatedGraph = Graph.MakeGraphFromAdjacenceMatrix(adjacenceMatrix);
+		List<List<Integer>> connectedComponents = associatedGraph.GetConnectedComponents();
+		
+		int connectedComponentsCounter = 0;
+		System.out.println("Connected components:");
+		for (var connectedComponent : connectedComponents) {
+			System.out.println("Connected component: " + connectedComponentsCounter);
+			
+			for (var connectedComponentNode : connectedComponent)
+				System.out.print(words[connectedComponentNode] + " ");
+		
+			System.out.println();
+		}
+		
+		System.out.println();
+		
+		long endTime = System.nanoTime();
+		long runTime = endTime - startTime;
+		System.out.println("The application ran for " + runTime + " nanoseconds");
+	}
+}
