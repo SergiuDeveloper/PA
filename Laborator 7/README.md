@@ -1,4 +1,4 @@
-# FII JAVA LAB7
+# FII JAVA LAB 7
 ## Nistor Marian-Sergiu
 
 * Compulsory
